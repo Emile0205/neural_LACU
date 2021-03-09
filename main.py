@@ -11,11 +11,7 @@ import gc
 count_path = 0
 count_labels = 0
 
-#unlab_classes_list = [[4, 5, 8, 9], [2, 4, 5, 9], [2, 4, 7, 9]]
-#unlab_classes_list = [[4, 5, 7, 8, 9], [1, 4, 5, 6, 8], [1, 3, 4, 8, 9], [0, 2, 4, 5, 9], [0, 2, 7, 8, 9], [1, 2, 4, 7, 9], [1, 2, 4, 5, 8], [0, 3, 7, 8, 9], [0, 1, 2, 4, 8], [0, 1, 3, 6, 8]]
-unlab_classes_list = [[4, 5, 7, 8, 9], [1, 4, 5, 6, 8], [1, 3, 4, 8, 9], [0, 2, 4, 5, 9], [0, 2, 7, 8, 9], [1, 2, 4, 7, 9], [1, 2, 4, 5, 8], [0, 3, 7, 8, 9], [0, 1, 2, 4, 8], [0, 1, 3, 6, 8]]
-
-count_labels = 7
+count_labels = 0
 while count_labels < 10:
     # TODO: Delete or rename previous model directory
     main_path = './model' + str(count_labels + 1)
@@ -24,10 +20,7 @@ while count_labels < 10:
     if not os.path.exists(main_path):
         os.makedirs(main_path)
 
-    temp_for = 0
-    if count_labels == 7:
-        temp_for = 8
-    for i in range(temp_for, 10):
+    for i in range(0, 10):
 
         num_lab_classes = 5
         gc.collect()
@@ -43,13 +36,7 @@ while count_labels < 10:
         if not os.path.exists(secondary_path):
             os.makedirs(secondary_path)
 
-        #generator = FCGenerator(data.img_size_x, data.img_size_y, 
-        #                        data.img_size_z)
-
-        #critic = FCCritic("Critic", data.img_size_x, data.img_size_y,
-        #                  data.img_size_z, num_lab_classes + 1)
-
-        network = FCCritic("classifier", data.img_size_x, data.img_size_y,
+        network = DCCritic("classifier", data.img_size_x, data.img_size_y,
                                data.img_size_z, num_lab_classes + 1)
 
         classify = classifier(network=network,
