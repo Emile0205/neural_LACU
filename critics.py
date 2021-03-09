@@ -2,8 +2,8 @@ import tensorflow as tf
 from utils import *
 
 
-class FCCritic():
-    def __init__(self, name, img_size_x, img_size_y, img_size_z, output):
+class DCDiscriminator():
+    def __init__(self, name, img_shape, output):
         """
         Neural network which takes a batch of images and creates a batch of scalars which represent a score for how
         real the image looks.
@@ -14,15 +14,10 @@ class FCCritic():
         :param channels: number of channels in the image (RGB = 3, Black/White = 1)
         """
         self.name = name
-        self.img_size_x = img_size_x
-        self.img_size_y = img_size_y
-        self.img_size_z = img_size_z
+        self.img_shape = img_shape
         self.output = output
-
-        self.gaussian_noise = tf.keras.layers.GaussianNoise(0.1)
-        self.gaussian_noise2 = tf.keras.layers.GaussianNoise(0.3)
-
-    def __call__(self, image, reuse=None, mini_batch = True):
+        
+    def __call__(self, print_summary = False):
         """
         Method which performs the computation.
 
@@ -30,24 +25,34 @@ class FCCritic():
         :param reuse: Boolean which determines tf scope reuse.
         :return: Tensor of shape [batch_size, 1]
         """
+        model = Sequential(name=self.name)
 
-        with tf.compat.v1.variable_scope(self.name, reuse=reuse):
-            image = tf.reshape(image, [-1, self.img_size_x * self.img_size_y * self.img_size_z])
+        model.add(Conv2D(16, kernel_size=3, strides = 2, input_shape=self.img_shape, padding="same"))
+        model.add(LeakyReLU(alpha=0.2))
+        model.add(Dropout(0.25))
+        model.add(BatchNormalization(momentum=0.8))
+        
+        
+        model.add(Conv2D(32, kernel_size=3, strides = 2, padding="same"))
+        model.add(ZeroPadding2D(padding=((0,1),(0,1))))
+        model.add(LeakyReLU(alpha=0.2))
+        model.add(Dropout(0.25))
+        model.add(BatchNormalization(momentum=0.8))       
+        
+        model.add(Conv2D(64, kernel_size=3, strides = 2, padding="same"))
+        model.add(LeakyReLU(alpha=0.2)) 
+        model.add(GaussianNoise(0.25))
+        model.add(Dropout(0.25))
+        model.add(BatchNormalization(momentum=0.8))       
+        
+        model.add(Flatten())
+        model.add(Dense(self.output))
+                         
+        if print_summary == True:
+            print("Input shape: " + str(self.img_shape))
+            model.summary()
 
-            image = tf.compat.v1.layers.dense(image, 1000, tf.nn.relu)
-            #image = self.gaussian_noise(image)
-            image = tf.compat.v1.layers.dense(image, 500, tf.nn.relu)
-            #image = self.gaussian_noise2(image)
-            image = tf.compat.v1.layers.dense(image, 250, tf.nn.relu)
-            #image = self.gaussian_noise2(image)
-            image = tf.compat.v1.layers.dense(image, 250, tf.nn.relu)
-            intermediate_layer = image
-            #image = self.gaussian_noise2(image)
-            image = tf.compat.v1.layers.dense(image, 250, tf.nn.relu)
-            #image = self.gaussian_noise(image)
-            image = tf.compat.v1.layers.dense(image, self.output)
-            return image, intermediate_layer
-
+        return model 
 
 
 
